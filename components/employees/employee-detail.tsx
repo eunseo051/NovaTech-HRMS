@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { ArrowLeft, Mail, Phone, Calendar, Building2, CircleUser } from 'lucide-react'
-import { type Employee, KRW, KRW_MAN, LEAVE_RECORDS } from '@/lib/data'
+import { type Employee, KRW, KRW_MAN, LEAVE_RECORDS, ATTENDANCE_RECORDS } from '@/lib/data'
 import { calcPayroll, PAY_LABELS } from '@/lib/payroll'
 import { StatusBadge, GradeBadge, WorkTypeBadge, LeaveStatusBadge } from '@/components/shared/status-badge'
 
@@ -75,10 +75,11 @@ export function EmployeeDetail({ employee }: { employee: Employee }) {
         {/* Tabs */}
         <Tabs defaultValue="info" className="flex flex-col gap-4">
           <TabsList className="w-full justify-start overflow-x-auto">
-            <TabsTrigger value="info">기본 정보</TabsTrigger>
-            <TabsTrigger value="salary">급여 정보</TabsTrigger>
-            <TabsTrigger value="leave">휴가 내역</TabsTrigger>
-            <TabsTrigger value="performance">평가 이력</TabsTrigger>
+            <TabsTrigger value="info">기본정보</TabsTrigger>
+            <TabsTrigger value="salary">급여</TabsTrigger>
+            <TabsTrigger value="attendance">근태</TabsTrigger>
+            <TabsTrigger value="leave">휴가</TabsTrigger>
+            <TabsTrigger value="performance">성과</TabsTrigger>
           </TabsList>
 
           <TabsContent value="info" className="mt-0">
@@ -129,6 +130,43 @@ export function EmployeeDetail({ employee }: { employee: Employee }) {
                       <span className="tabular-nums">{KRW(pay.totalDeduction)}원</span>
                     </div>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="attendance" className="mt-0">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">근태 현황 (2026년 7월)</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                <div className="grid gap-4 sm:grid-cols-4">
+                  <SummaryStat label="이번달 야근" value={`${employee.thisMonthOt}h`} />
+                  <SummaryStat label="근무형태" value={employee.workType} />
+                  <SummaryStat label="재직상태" value={employee.status} />
+                  <SummaryStat label="근속연수" value={`${years}년`} />
+                </div>
+                <Separator />
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm font-semibold">최근 출퇴근 기록</p>
+                  {(() => {
+                    const myAtt = ATTENDANCE_RECORDS.filter((a) => a.employeeId === employee.id).slice(-10).reverse()
+                    return myAtt.length > 0 ? (
+                      <div className="flex flex-col gap-1.5">
+                        {myAtt.map((a) => (
+                          <div key={a.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm">
+                            <span className="text-muted-foreground">{a.date}</span>
+                            <span className="tabular-nums">{a.checkIn} ~ {a.checkOut}</span>
+                            <span className="tabular-nums text-muted-foreground">{a.workHours}h</span>
+                            <span className="text-xs">{a.status}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="py-6 text-center text-sm text-muted-foreground">최근 근태 기록이 없습니다.</p>
+                    )
+                  })()}
                 </div>
               </CardContent>
             </Card>
